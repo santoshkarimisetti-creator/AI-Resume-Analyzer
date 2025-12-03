@@ -18,11 +18,28 @@ from sklearn.feature_extraction import text as sklearn_text
 from collections import Counter
 
 EXTRA_STOPWORDS = {
-    "looking", "ideal", "candidate", "ability", "strong",
-    "excellent", "role", "team", "environment", "preferred",
-    "required", "including", "responsible", "responsibilities",
-    "passion", "passionate", "good", "great", "across",
-    "various", "using", "based"
+    # --- HR / Recruiting Filler ---
+    "looking", "ideal", "candidate", "role", "position", "job", "opportunity",
+    "team", "company", "client", "clients", "environment", "culture",
+    "responsibilities", "responsible", "duties", "requirements", "qualification",
+    "qualifications", "preferred", "plus", "advantage", "bonus", "degree",
+    "bachelor", "masters", "equivalent", "field", "related", "relevant",
+    
+    # --- Generic Descriptors ---
+    "strong", "excellent", "good", "great", "proficient", "proficiency",
+    "demonstrated", "proven", "track", "record", "solid", "deep",
+    "understanding", "knowledge", "experience", "familiarity", "expert",
+    "hands-on", "passion", "passionate", "motivated", "self-starter",
+    "detail", "oriented", "analytical", "problem-solving", "communication",
+    "collaborative", "interpersonal", "organizational", "highly",
+    
+    # --- Common Verbs/Connectors (Non-Technical) ---
+    "ability", "able", "use", "using", "used", "work", "working",
+    "collaborate", "support", "assist", "ensure", "participate",
+    "maintain", "develop", "design", "implement", "build", "create", 
+    "manage", "drive", "across", "various", "including", "based",
+    "within", "daily", "tasks", "activities", "solutions", "services",
+    "projects", "systems", "applications", "years", "best", "practices"
 }
 STOPWORDS = sklearn_text.ENGLISH_STOP_WORDS.union(EXTRA_STOPWORDS)
 
@@ -142,8 +159,20 @@ def compute_ats_readiness(text: str):
         return 0, {}, 0, 0, 0
 
     # --- 1. Section Analysis (Max 40 pts) ---
-    required_sections = ["experience", "education", "skills", "projects", "summary"]
-    present_sections = {sec: (sec in text) for sec in required_sections}
+    # Enhanced mapping to catch different header styles
+    SECTION_SYNONYMS = {
+        "experience": ["experience", "work experience", "professional experience", "employment", "work history", "internships"],
+        "education": ["education", "academic background", "academic qualifications", "academics"],
+        "skills": ["skills", "technical skills", "technologies", "competencies", "tech stack"],
+        "projects": ["projects", "academic projects", "personal projects", "capstone"],
+        "summary": ["summary", "objective", "profile", "about me", "professional summary"]
+    }
+
+    present_sections = {}
+    for section, synonyms in SECTION_SYNONYMS.items():
+        # Check if ANY of the synonyms exist in the text
+        # We use strict keyword check (syn in text)
+        present_sections[section] = any(syn in text for syn in synonyms)
     
     # 8 points per section found
     section_score = sum(8 for present in present_sections.values() if present)

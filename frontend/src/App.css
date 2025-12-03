@@ -352,3 +352,83 @@ body {
   margin-top: 8px;
   font-size: 0.8rem;
 }
+/* --- Keywords Grid Layout --- */
+.keywords-grid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.keywords-column {
+  flex: 1;
+  min-width: 250px;
+  background: #fdfdfd;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.keywords-title {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #eee;
+}
+
+.matched-title { color: #2e7d32; }
+.missing-title { color: #c62828; }
+
+/* --- Chip Container --- */
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* --- Base Chip Styling --- */
+.chip {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative; /* Essential for the tooltip */
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* --- Specific Colors --- */
+.chip-matched {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #c8e6c9;
+}
+
+.chip-missing {
+  background-color: #ffebee;
+  color: #b71c1c;
+  border: 1px solid #ffcdd2;
+}
+
+/* --- 🔹 THE HOVER TOOLTIP (Task 3) --- */
+.chip:hover::after {
+  content: "Click to copy";
+  position: absolute;
+  bottom: 110%; /* Shows above the chip */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}

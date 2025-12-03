@@ -230,6 +230,25 @@ export default function App() {
               <summary className="debug-summary">
                 ▶ Show Raw Extracted Text (Debug)
               </summary>
+              
+              {/* 🔹 TASK 4: Copy Button */}
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(resp.extracted_text);
+                  alert("Text copied to clipboard!");
+                }}
+                className="primary-btn"
+                style={{ 
+                  margin: "10px 0", 
+                  fontSize: "0.8rem", 
+                  padding: "6px 12px", 
+                  cursor: "pointer",
+                  display: "block" 
+                }}
+              >
+                📋 Copy Extracted Text
+              </button>
+
               <pre className="debug-pre">{resp.extracted_text}</pre>
             </details>
           </div>
