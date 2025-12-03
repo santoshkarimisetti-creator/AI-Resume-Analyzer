@@ -64,53 +64,178 @@ export default function App() {
   };
 
   return (
-    <div className="App" style={{ padding: 24, textAlign: 'center', maxWidth: 600, margin: '0 auto' }}>
-      <h1>Resume Analyzer</h1>
+  <div className="app-root">
+    <div className="app-card">
+      <h1 className="app-title">Resume Analyzer</h1>
 
-      <div style={{ marginBottom: 16, textAlign: 'left' }}>
-        <label>Upload Resume (.pdf or .docx):</label>
-        <input type="file" accept=".pdf,.docx" onChange={handleFileChange} style={{ display: 'block', marginTop: 8 }} />
-        {file && <p style={{ color: 'green', marginTop: 8 }}>Selected: {file.name}</p>}
+      {/* --- File Input --- */}
+      <div className="field-group">
+        <label className="field-label">Upload Resume (.pdf or .docx):</label>
+        <input
+          type="file"
+          accept=".pdf,.docx"
+          onChange={handleFileChange}
+          className="file-input"
+        />
+        {file && <p className="file-selected">Selected: {file.name}</p>}
       </div>
 
-      <div style={{ marginBottom: 16, textAlign: 'left' }}>
-        <label>Job Description (optional):</label>
+      {/* --- JD Input --- */}
+      <div className="field-group">
+        <label className="field-label">Job Description (optional):</label>
         <textarea
           value={jd}
           onChange={(e) => setJd(e.target.value)}
           placeholder="Paste job description here..."
-          style={{ width: '100%', height: 120, marginTop: 8, padding: 8, fontFamily: 'monospace' }}
+          className="jd-textarea"
         />
       </div>
 
-      <button onClick={analyzeResume} disabled={loading} style={{ padding: '10px 20px', fontSize: 16 }}>
-        {loading ? 'Analyzing…' : 'Analyze Resume'}
+      <button
+        onClick={analyzeResume}
+        disabled={loading}
+        className={`primary-btn ${loading ? "primary-btn-disabled" : ""}`}
+      >
+        {loading ? "Analyzing…" : "Analyze Resume"}
       </button>
 
-      
-      {resp && resp.extracted_text && (
-  <div style={{ marginTop: 24, textAlign: 'left' }}>
-    <h3>Extracted Resume Text (Debug View)</h3>
-    <pre
-      style={{
-        whiteSpace: 'pre-wrap',
-        background: '#222',      // dark background
-        color: '#fff',           // white text
-        padding: 12,
-        borderRadius: 4,
-        maxHeight: 300,
-        overflowY: 'auto',
-        fontFamily: 'monospace',
-      }}
-    >
-      {resp.extracted_text}
-    </pre>
-  </div>
-)}
+      {/* --- ERROR MESSAGE --- */}
+      {err && <p className="error-text">Error: {err}</p>}
 
+      {/* --- RESULTS SECTION --- */}
+      {resp && (
+        <div className="result-card">
+          {/* === MODE A: JD MATCH RESULTS === */}
+          {resp.jd_present ? (
+            <div>
+              <div className="result-header">
+                <span className="result-icon">🎯</span>
+                <h2>JD Match Results</h2>
+              </div>
 
+              {/* Match Score */}
+              <div className="score-block">
+                <span
+                  className={`score-value ${
+                    resp.match_score >= 70 ? "score-good" : "score-medium"
+                  }`}
+                >
+                  {resp.match_score}%
+                </span>
+                <p className="score-label">Match Score</p>
+              </div>
 
-      {err && <p style={{ color: 'red', marginTop: 12 }}>Error: {err}</p>}
+              <div className="keywords-grid">
+                {/* Matched Keywords */}
+                <div className="keywords-column">
+                  <h3 className="keywords-title matched-title">
+                    ✅ Matched Keywords
+                  </h3>
+                  {resp.matched_keywords && resp.matched_keywords.length > 0 ? (
+                    <div className="chip-list">
+                      {resp.matched_keywords.map((kw, i) => (
+                        <span key={i} className="chip chip-matched">
+                          {kw}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="muted-text">No specific keywords matched.</p>
+                  )}
+                </div>
+
+                {/* Missing Keywords */}
+                <div className="keywords-column">
+                  <h3 className="keywords-title missing-title">
+                    ❌ Missing Keywords
+                  </h3>
+                  {resp.missing_keywords && resp.missing_keywords.length > 0 ? (
+                    <div className="chip-list">
+                      {resp.missing_keywords.map((kw, i) => (
+                        <span key={i} className="chip chip-missing">
+                          {kw}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="muted-text">No missing keywords found!</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* === MODE B: ATS READINESS RESULTS === */
+            <div>
+              <div className="result-header">
+                <span className="result-icon">📋</span>
+                <h2>ATS Readiness Report</h2>
+              </div>
+
+              {/* ATS Score */}
+              <div className="score-block">
+                <span
+                  className={`score-value ${
+                    resp.ats_score >= 70 ? "score-good" : "score-medium"
+                  }`}
+                >
+                  {resp.ats_score}
+                </span>
+                <p className="score-label">ATS Readiness Score (0–100)</p>
+              </div>
+
+              {/* Breakdown Grid */}
+              <div className="ats-grid">
+                {/* Section Analysis */}
+                <div className="ats-panel">
+                  <h3 className="panel-title">📂 Section Analysis</h3>
+                  <ul className="section-list">
+                    {resp.section_analysis &&
+                      Object.entries(resp.section_analysis).map(
+                        ([section, present]) => (
+                          <li key={section} className="section-row">
+                            <span className="section-name">
+                              {section.charAt(0).toUpperCase() +
+                                section.slice(1)}
+                            </span>
+                            <span className="section-status">
+                              {present ? "✅ Found" : "⚠️ Missing"}
+                            </span>
+                          </li>
+                        )
+                      )}
+                  </ul>
+                </div>
+
+                {/* Detailed Scores */}
+                <div className="ats-panel">
+                  <h3 className="panel-title">📊 Scoring Details</h3>
+                  <p>
+                    <strong>Readability:</strong> {resp.readability_score} / 30
+                  </p>
+                  <p>
+                    <strong>Keyword Density:</strong>{" "}
+                    {resp.keyword_density_score} / 20
+                  </p>
+                  <p>
+                    <strong>Formatting:</strong> {resp.formatting_score} / 10
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* --- Debug View (Extracted Text) --- */}
+          <div className="debug-block">
+            <details>
+              <summary className="debug-summary">
+                ▶ Show Raw Extracted Text (Debug)
+              </summary>
+              <pre className="debug-pre">{resp.extracted_text}</pre>
+            </details>
+          </div>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 }
