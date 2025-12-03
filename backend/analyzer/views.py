@@ -1,5 +1,7 @@
 from django.shortcuts import render
 
+import requests
+from django.conf import settings
 import os
 import tempfile
 import re
@@ -338,3 +340,157 @@ def analyze_resume(request):
             "keyword_density_score": keyword_density_score,
             "formatting_score": formatting_score
         }, status=status.HTTP_200_OK)
+    
+@csrf_exempt
+@permission_classes([AllowAny])
+@api_view(["POST"])
+def ai_suggest(request):
+    """
+    Calls Bytez chat-completions API (OpenAI-compatible) using
+    Qwen/Qwen3-4B-Instruct-2507 to give resume suggestions.
+    """
+
+    # LOCAL ONLY: hard-code key + endpoint.
+    # DO NOT COMMIT REAL KEY TO GITHUB.
+    api_key = os.getenv("BYTEZ_API_KEY")
+    base_url = os.getenv("BYTEZ_BASE_URL")
+    model_id = os.getenv("BYTEZ_MODEL_ID")
+    url = f"{base_url}/v1/chat/completions"
+
+    if not api_key:
+        return Response(
+            {"error": "AI key missing in server code."},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+    if not base_url:
+        return Response(
+            {"error": "AI base URL missing in server code."},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+    if not model_id:
+        return Response(
+            {"error": "AI model ID missing in server code."},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+    resume_text = (request.data.get("resume_text") or "").strip()
+    job_description = (request.data.get("job_description") or "").strip()
+
+    if not resume_text:
+        return Response(
+            {"error": "resume_text is required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    resume_text_short = resume_text[:4000]
+    jd_short = job_description[:2000]
+
+    jd_block = jd_short if jd_short else "No job description was provided."
+
+    user_prompt = f"""
+        You are an AI assistant helping a student improve their resume for a job.
+
+        RESUME:
+        {resume_text_short}
+
+        JOB DESCRIPTION:
+        {jd_block}
+
+        Write your answer ONLY in this format:
+
+        Match summary:
+        - ...
+
+        Missing or weak skills / keywords:
+        - ...
+
+        Section-wise improvements:
+        - Summary: ...
+        - Skills: ...
+        - Projects: ...
+        - Experience: ...
+
+        Example improved bullet points:
+        - ...
+
+        Rules:
+        - Use clear bullet points.
+        - Do NOT repeat the resume text.
+        - Do NOT repeat these instructions.
+        - Keep everything under 200 words.
+    """.strip()
+
+    payload = {
+        "model": model_id,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a concise, practical resume coach for students.",
+            },
+            {
+                "role": "user",
+                "content": user_prompt,
+            },
+        ],
+        "max_tokens": 300,
+        "temperature": 0.4,
+    }
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        resp = requests.post(url, json=payload, headers=headers, timeout=120)
+
+        if resp.status_code != 200:
+            # Special case: Bytez free plan rate-limit / concurrency error
+            if resp.status_code == 429:
+                return Response(
+                    {
+                        "error": "AI service is busy right now (free plan rate limit). Please wait 30–60 seconds and try again.",
+                        "status_code": 429,
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+
+            # Other HTTP errors
+            return Response(
+                {
+                    "error": "AI API error",
+                    "status_code": resp.status_code,
+                    "body": resp.text[:500],
+                },
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        data = resp.json()
+
+        suggestions_text = ""
+        if isinstance(data, dict):
+            choices = data.get("choices") or []
+            if choices and isinstance(choices[0], dict):
+                msg = choices[0].get("message") or {}
+                suggestions_text = (msg.get("content") or "").strip()
+
+        if not suggestions_text:
+            suggestions_text = resp.text
+
+        return Response(
+            {"ok": True, "suggestions_text": suggestions_text},
+            status=status.HTTP_200_OK,
+        )
+
+    except requests.exceptions.Timeout:
+        return Response(
+            {
+                "error": "AI service took too long to respond (timeout). This is a limitation of the free API. Please try again after some time."
+            },
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
+    except Exception as e:
+        return Response(
+            {"error": f"AI request failed: {str(e)}"},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )

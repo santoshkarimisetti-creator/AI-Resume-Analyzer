@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
+import logo from "./assets/logo.png";
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 export default function App() {
   const [resp, setResp] = useState(null);
@@ -11,6 +14,11 @@ export default function App() {
   const [extractedText, setExtractedText] = useState("");
   const [analyzeLoading, setAnalyzeLoading] = useState(false);
   const [analyzeError, setAnalyzeError] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const [aiSuggestions, setAiSuggestions] = useState(null);
+
+
 
 
   const handleFileChange=(e)=>{
@@ -45,14 +53,16 @@ export default function App() {
       }
       
       const { data } = await axios.post(
-        "http://127.0.0.1:8000/api/analyzer/analyze/resume/",
+        `${API_BASE}/api/analyzer/analyze/resume/`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         }
-    );
+      );
+
+
 
       setResp(data);
     }catch(e){
@@ -63,10 +73,50 @@ export default function App() {
     }
   };
 
+  const getAiSuggestions = async () => {
+    if (!resp || !resp.extracted_text) {
+      setAiError("Analyze your resume first.");
+      return;
+    }
+
+    setAiLoading(true);
+    setAiError(null);
+
+    try {
+      const { data } = await axios.post(
+        `${API_BASE}/api/analyzer/ai-suggest/`,
+        {
+          resume_text: resp.extracted_text,
+          job_description: jd,
+        }
+      );
+
+      if (data.ok && data.suggestions_text) {
+        setAiSuggestions(data.suggestions_text);
+      } else {
+        setAiError(data.error || "AI could not generate suggestions.");
+      }
+    } catch (e) {
+      const msg =
+        e.response?.data?.error ||
+        e.response?.data ||
+        e.message ||
+        "Unknown AI error.";
+      setAiError(msg);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+
   return (
   <div className="app-root">
     <div className="app-card">
-      <h1 className="app-title">Resume Analyzer</h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+        <img src={logo} alt="Logo" style={{ height: '50px' }} />
+        <h1>AI-Resume Analyzer</h1>
+      </div>
+
 
       {/* --- File Input --- */}
       <div className="field-group">
@@ -224,6 +274,55 @@ export default function App() {
             </div>
           )}
 
+
+          {/* --- AI Suggestions --- */}
+          <div style={{ marginTop: 24 }}>
+            <button
+              onClick={getAiSuggestions}
+              disabled={aiLoading || !resp}
+              style={{
+                padding: "8px 16px",
+                fontSize: 14,
+                cursor: aiLoading ? "default" : "pointer",
+              }}
+            >
+              {aiLoading ? "Getting AI Suggestions..." : "Get AI Suggestions"}
+            </button>
+
+            {aiError && (
+              <p style={{ color: "orange", marginTop: 8 }}>
+                AI: {aiError}
+              </p>
+            )}
+
+            {aiSuggestions && (
+              <div
+                style={{
+                  marginTop: 16,
+                  background: "#111827",
+                  color: "#e5e7eb",
+                  padding: 16,
+                  borderRadius: 8,
+                  border: "1px solid #374151",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                <h3 style={{ marginTop: 0, marginBottom: 8 }}>💡 AI Suggestions</h3>
+                <pre
+                  style={{
+                    margin: 0,
+                    whiteSpace: "pre-wrap",
+                    fontFamily: "monospace",
+                    fontSize: 14,
+                  }}
+                >
+                  {aiSuggestions}
+                </pre>
+              </div>
+            )}
+          </div>
+
+
           {/* --- Debug View (Extracted Text) --- */}
           <div className="debug-block">
             <details>
@@ -255,6 +354,26 @@ export default function App() {
         </div>
       )}
     </div>
+    <div
+      style={{
+        position: "fixed",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        fontSize: "4rem",
+        fontWeight: "bold",
+        color: "rgba(200, 200, 200, 0.15)",
+        userSelect: "none",
+        pointerEvents: "none",
+        textAlign: "center",
+        zIndex: 0,
+        whiteSpace: "nowrap"
+      }}
+    >
+      © SK-ResumeAnalyzer
+    </div>
+
+
   </div>
 );
 }
