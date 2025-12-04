@@ -19,6 +19,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction import text as sklearn_text
 from collections import Counter
 
+
 EXTRA_STOPWORDS = {
     # --- HR / Recruiting Filler ---
     "looking", "ideal", "candidate", "role", "position", "job", "opportunity",
