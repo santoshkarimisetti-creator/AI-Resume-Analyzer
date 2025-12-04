@@ -123,14 +123,30 @@ export default function App() {
       {/* --- File Input --- */}
       <div className="field-group">
         <label className="field-label">Upload Resume (.pdf or .docx):</label>
+
         <input
           type="file"
           accept=".pdf,.docx"
           onChange={handleFileChange}
           className="file-input"
         />
+
         {file && <p className="file-selected">Selected: {file.name}</p>}
+
+        {/* Warning message */}
+        <p
+          style={{
+            fontSize: "0.8rem",
+            color: "#9ca3af",
+            marginTop: 6,
+            textAlign: "left",
+          }}
+        >
+          ⚠️ Please upload <strong>text-based PDFs</strong> or <strong>Word (.docx)</strong> files.
+          Scanned/image-only PDFs may not extract text.
+        </p>
       </div>
+
 
       {/* --- JD Input --- */}
       <div className="field-group">
