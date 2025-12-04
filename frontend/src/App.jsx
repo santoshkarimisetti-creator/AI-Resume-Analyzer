@@ -5,7 +5,7 @@ import logo from "./assets/logo.png";
 
 const API_BASE =
   import.meta.env.VITE_API_URL ||
-  "http://127.0.0.1:8000";
+  "https://ai-resume-analyzer-qz1q.onrender.com";
 
 export default function App() {
   const [resp, setResp] = useState(null);
