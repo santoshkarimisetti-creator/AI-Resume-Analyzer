@@ -298,30 +298,53 @@ export default function App() {
             )}
 
             {aiSuggestions && (
-              <div
+            <div
+              style={{
+                marginTop: 16,
+                background: "#111827",
+                color: "#e5e7eb",
+                padding: 16,
+                borderRadius: 8,
+                border: "1px solid #374151",
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              <h3 style={{ marginTop: 0, marginBottom: 8 }}>💡 AI Suggestions</h3>
+
+              {/* COPY BUTTON */}
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(aiSuggestions);
+                  alert("AI Suggestions copied!");
+                }}
                 style={{
-                  marginTop: 16,
-                  background: "#111827",
-                  color: "#e5e7eb",
-                  padding: 16,
-                  borderRadius: 8,
-                  border: "1px solid #374151",
-                  whiteSpace: "pre-wrap",
+                  padding: "8px 14px",
+                  marginBottom: 12,
+                  borderRadius: 6,
+                  border: "none",
+                  background: "#2563eb",
+                  color: "white",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: 14,
                 }}
               >
-                <h3 style={{ marginTop: 0, marginBottom: 8 }}>💡 AI Suggestions</h3>
-                <pre
-                  style={{
-                    margin: 0,
-                    whiteSpace: "pre-wrap",
-                    fontFamily: "monospace",
-                    fontSize: 14,
-                  }}
-                >
-                  {aiSuggestions}
-                </pre>
-              </div>
-            )}
+                📋 Copy Suggestions
+              </button>
+
+              <pre
+                style={{
+                  margin: 0,
+                  whiteSpace: "pre-wrap",
+                  fontFamily: "monospace",
+                  fontSize: 14,
+                }}
+              >
+                {aiSuggestions}
+              </pre>
+            </div>
+          )}
+
           </div>
 
 

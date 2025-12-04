@@ -432,3 +432,80 @@ body {
   pointer-events: none;
   z-index: 10;
 }
+
+/* ===== REPLACEMENT: targeted responsive fixes ===== */
+
+/* Safety first: consistent sizing */
+* { box-sizing: border-box; }
+
+/* Prevent any media from forcing overflow */
+img, svg, iframe, video { max-width: 100%; height: auto; }
+
+/* Keep page from ever scrolling horizontally (safe guard) */
+html, body { overflow-x: hidden; }
+
+/* TITLE: force a single-line title but allow truncation if too long */
+.app-title {
+  white-space: nowrap;          /* keep on one line */
+  overflow: hidden;            /* hide overflow */
+  text-overflow: ellipsis;     /* show "…" when too long */
+  display: block;
+  width: 100%;
+  margin: 0 auto 16px;
+}
+
+/* Make card fluid but never wider than viewport */
+.app-card {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: visible;           /* allow inner overflow to scroll vertically, not horizontally */
+}
+
+/* Ensure result area can't push page horizontally */
+.result-card, .ats-panel, .keywords-column {
+  overflow-wrap: anywhere;     /* break long tokens/URLs */
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* Fix for the debug/pre block (common offender) */
+.debug-pre {
+  white-space: pre-wrap;       /* allow wrapping */
+  word-break: break-word;
+  max-width: 100%;
+  overflow-x: auto;            /* if a single long line exists, let it scroll inside the block, not the page */
+}
+
+/* Reduce big font/padding only on small screens (non-invasive) */
+@media (max-width: 720px) {
+  .app-card { padding: 16px; border-radius: 12px; }
+  .app-title { font-size: 1.4rem; }     /* smaller so titles won't wrap early */
+  .result-header h2 { font-size: 1.05rem; }
+  .score-value { font-size: 2rem; padding: 6px 12px; }
+  .jd-textarea { min-height: 80px; font-size: 0.92rem; }
+  .chip { font-size: 0.85rem; padding: 6px 10px; }
+}
+
+/* If you have any fixed watermark or fixed element, clamp its width and keep it non-interactive */
+.watermark, .watermark-fixed, .fixed-watermark, .app-root > div[style*="position: fixed"] {
+  max-width: 100%;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  pointer-events: none;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.06 !important;
+  font-size: 1.6rem !important;
+  bottom: 8px !important;
+}
+
+/* Make inputs/buttons full-width on very small screens (usability) */
+@media (max-width: 420px) {
+  .primary-btn { width: 100%; box-sizing: border-box; }
+  .file-input { width: 100%; }
+}
+
+/* Safety net to prevent negative margins from causing horizontal scroll */
+body > * { max-width: 100vw; }
