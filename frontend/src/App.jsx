@@ -4,8 +4,8 @@ import './App.css';
 import logo from "./assets/logo.png";
 
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://ai-resume-analyzer-osj7.onrender.com";
+  import.meta.env.VITE_API_URL ||
+  "http://127.0.0.1:8000";
 
 export default function App() {
   const [resp, setResp] = useState(null);
