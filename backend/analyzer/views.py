@@ -355,21 +355,18 @@ def ai_suggest(request):
     api_key = os.getenv("BYTEZ_API_KEY")
     base_url = os.getenv("BYTEZ_BASE_URL")
     model_id = os.getenv("BYTEZ_MODEL_ID")
-    url = f"{base_url}/v1/chat/completions"
+    
 
-    if not api_key:
+    if not api_key or not base_url or not model_id:
         return Response(
-            {"error": "AI key missing in server code."},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE,
-        )
-    if not base_url:
-        return Response(
-            {"error": "AI base URL missing in server code."},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE,
-        )
-    if not model_id:
-        return Response(
-            {"error": "AI model ID missing in server code."},
+            {
+                "error": "AI suggestions are not configured on the server.",
+                "debug": {
+                    "has_key": bool(api_key),
+                    "has_url": bool(base_url),
+                    "has_model": bool(model_id),
+                },
+            },
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
     resume_text = (request.data.get("resume_text") or "").strip()
@@ -441,7 +438,7 @@ def ai_suggest(request):
     }
 
     try:
-        resp = requests.post(url, json=payload, headers=headers, timeout=120)
+        resp = requests.post(base_url, json=payload, headers=headers, timeout=120)
 
         if resp.status_code != 200:
             # Special case: Bytez free plan rate-limit / concurrency error
