@@ -1,0 +1,114 @@
+# Resume Analyzer
+
+A web application that analyzes resumes using AI and ATS (Applicant Tracking System) techniques. Users can upload their resume and optionally a job description to receive feedback, keyword matching, and improvement suggestions.
+
+---
+
+## Project Structure
+
+```
+resume-analyzer/
+│
+├── backend/
+│   ├── analyzer/           # Django app for resume analysis and API endpoints
+│   ├── resumeapi/          # Django project settings and configuration
+│   ├── manage.py           # Django management script
+│   ├── requirements.txt    # Python dependencies
+│   └── .env.example        # Example backend environment variables
+│
+├── frontend/
+│   ├── public/             # Static assets
+│   ├── src/                # React source code
+│   ├── package.json        # Frontend dependencies
+│   └── .env.local          # Example frontend environment variables
+│
+└── README.md               # Project documentation
+```
+
+---
+
+## Features
+
+- **Resume Upload:** Accepts PDF and DOCX files.
+- **Job Description Matching:** Compares resume to a provided job description and highlights keyword matches.
+- **ATS Readiness:** Checks resume structure and formatting for ATS compatibility.
+- **AI Suggestions:** Provides improvement tips using an AI API.
+- **Modern UI:** Built with React and Vite.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.9 or higher
+- Node.js 18 or higher
+
+### Backend Setup
+
+1. Install dependencies:
+    ```sh
+    cd backend
+    python -m venv venv
+    venv\Scripts\activate   # On Windows
+    pip install -r requirements.txt
+    ```
+
+2. Configure environment variables:
+    - Copy `.env.example` to `.env` and fill in your settings.
+
+3. Run migrations:
+    ```sh
+    python manage.py migrate
+    ```
+
+4. Start the backend server:
+    ```sh
+    python manage.py runserver
+    ```
+
+### Frontend Setup
+
+1. Install dependencies:
+    ```sh
+    cd frontend
+    npm install
+    ```
+
+2. Configure environment variables:
+    - Copy `.env.local` and set the API URL if needed.
+
+3. Start the frontend server:
+    ```sh
+    npm run dev
+    ```
+
+---
+
+## Usage
+
+- Open the frontend in your browser (usually http://localhost:5173).
+- Upload your resume and optionally paste a job description.
+- Click "Analyze Resume" to see results and suggestions.
+
+---
+
+## API Endpoints
+
+- `POST /api/analyzer/analyze/resume/`  
+  Upload resume and job description for analysis.
+
+- `POST /api/analyzer/ai-suggest/`  
+  Get AI-powered suggestions.
+
+---
+
+## License
+
+MIT License.
+
+---
+
+## Contributing
+
+Pull requests and issues are welcome!
